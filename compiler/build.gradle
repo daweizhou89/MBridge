@@ -1,0 +1,25 @@
+apply plugin: 'java'
+
+dependencies {
+
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // truth
+    compile 'com.google.truth:truth:0.28'
+
+    // auto
+    compile 'com.google.auto.service:auto-service:1.0-rc2'
+    compile 'com.google.auto:auto-common:0.6'
+
+    // javapoet
+    compile 'com.squareup:javapoet:1.7.0'
+
+    compile project(':annotation')
+}
+
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.daweizhou89'
+version='1.0'

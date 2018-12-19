@@ -1,0 +1,27 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
+dependencies {
+
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly "com.android.support:appcompat-v7:28.0.0"
+    compileOnly 'com.squareup.retrofit2:converter-gson:2.1.0'
+    api project(':annotation')
+}
+
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.daweizhou89'
+version='1.0'

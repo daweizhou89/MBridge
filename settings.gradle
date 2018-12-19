@@ -1,0 +1,3 @@
+include ':modulea', ':moduleb'
+include ':app'
+include ':annotation', ':core', 'compiler'
