@@ -12,6 +12,9 @@ import com.github.daweizhou89.mbridge.core.MBridge;
 public class AActivity extends AppCompatActivity {
 
     @Autowired
+    int num;
+
+    @Autowired
     ModelA modelA;
 
     @Override
@@ -19,7 +22,7 @@ public class AActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_a);
         MBridge.inject(this);
-        Log.e("dawei", "AActivity:modelA:" + modelA);
+        Log.e("dawei", "AActivity: num = " + num + ", modelA = " + modelA);
         MBridge.invoke("moduleb", "a");
         MBridge.invoke("moduleb", "b");
         findViewById(R.id.btn_main_activity).setOnClickListener(new View.OnClickListener() {

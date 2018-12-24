@@ -16,9 +16,9 @@ import java.util.Map;
 
 public class MBridge {
 
-    private static Map<String, IMBridgeService> sIntentActionsMap = new HashMap<>();
+    private static Map<String, IMBridgeService> sBridgeServiceMap = new HashMap<>();
 
-    private static List<IMBridge> sIntentHelperList = new ArrayList<>();
+    private static List<IMBridge> sBridgeList = new ArrayList<>();
 
     public static <T extends IMBridge> RegisterWrapper register(Class<T> bridgeClass) {
         registerInternal(bridgeClass);
@@ -28,11 +28,11 @@ public class MBridge {
     private static <T extends IMBridge> void registerInternal(Class<T> bridgeClass) {
         IMBridge bridge = getInstance(bridgeClass);
         if (bridge != null) {
-            sIntentHelperList.add(bridge);
+            sBridgeList.add(bridge);
             Class serviceClass = bridge.getMBridgeServiceClass();
             IMBridgeService intentActions = (IMBridgeService) getInstance(serviceClass);
             if (intentActions != null) {
-                sIntentActionsMap.put(bridge.getModuleName(), intentActions);
+                sBridgeServiceMap.put(bridge.getModuleName(), intentActions);
             }
         }
     }
@@ -51,7 +51,7 @@ public class MBridge {
     }
 
     public static void invoke(String moduleName, String action, Object... params) {
-        IMBridgeService intentActions = sIntentActionsMap.get(moduleName);
+        IMBridgeService intentActions = sBridgeServiceMap.get(moduleName);
         if (intentActions != null) {
             intentActions.invoke(action, params);
         } else {
@@ -68,7 +68,7 @@ public class MBridge {
     }
 
     protected static int prepare(Intent intent, Context substitute, String path) {
-        for (IMBridge bridge : sIntentHelperList) {
+        for (IMBridge bridge : sBridgeList) {
             int type = bridge.prepare(intent, substitute, path);
             if (type != DestinationWrapper.TYPE_NULL) {
                 return type;
@@ -78,7 +78,7 @@ public class MBridge {
     }
 
     public static boolean inject(Object target) {
-        for (IMBridge bridge : sIntentHelperList) {
+        for (IMBridge bridge : sBridgeList) {
             if (bridge.inject(target)) {
                 return true;
             }
@@ -89,7 +89,7 @@ public class MBridge {
     public static class RegisterWrapper {
         public <T extends IMBridge> RegisterWrapper register(Class<T> bridgeClass) {
             registerInternal(bridgeClass);
-            return new RegisterWrapper();
+            return this;
         }
     }
 

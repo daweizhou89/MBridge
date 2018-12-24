@@ -20,16 +20,32 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_a_activity).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 AActivity_MBridge.intent().modelA(new ModelA(1, "a"))
+                        .num(1)
                         .start(MainActivity.this);
+
             }
         });
+
+        findViewById(R.id.btn_a_activity_2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                MBridge.intent("://a?num=2")
+                        .start(MainActivity.this);
+
+            }
+        });
+
         findViewById(R.id.btn_b_activity).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 MBridge.intent("b")
                         .putExtra("modelB", new ModelMain(2, "b"))
                         .start(MainActivity.this);
+
             }
         });
     }

@@ -19,7 +19,7 @@ public class BActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_b);
         MBridge.inject(this);
-        Log.e("dawei", "BActivity:modelB:" + modelB);
+        Log.e("dawei", "BActivity:modelB = " + modelB);
         MBridge.invoke("modulea", "a");
         MBridge.invoke("modulea", "b");
         findViewById(R.id.btn_main_activity).setOnClickListener(new View.OnClickListener() {
