@@ -16,6 +16,8 @@ import java.lang.reflect.Type;
 
 public class GsonUtils {
 
+    private static final boolean DEBUG = false;
+
     public static <T> T getParam(Uri uri, String key, Type type) {
         String param = UriUtils.getStringQueryParameter(uri, key);
         if (TextUtils.isEmpty(param)) {
@@ -54,7 +56,7 @@ public class GsonUtils {
         }
     }
 
-    public static <T> T getValue(Object value, Type type, Class<T> clazz) {
+    public static <T> T getValue(Object value, Type type) {
         if (value == null || type == null) {
             return null;
         }
@@ -62,7 +64,9 @@ public class GsonUtils {
         try {
             Gson gson = new Gson();
             String json = gson.toJson(value);
-            Log.d("GsonUtils", "value:" + value + ", type:" + type);
+            if (DEBUG) {
+                Log.d("GsonUtils", "value:" + value + ", type:" + type);
+            }
             newValue = gson.fromJson(json, type);
         } catch (java.lang.Throwable t) {
             Log.e("GsonUtils", "value:" + value + ", type:" + type, t);

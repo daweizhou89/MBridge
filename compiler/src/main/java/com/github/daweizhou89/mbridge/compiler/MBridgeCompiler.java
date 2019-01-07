@@ -504,9 +504,13 @@ public class MBridgeCompiler extends AbstractProcessor {
         MethodSpec.Builder invokeBuilder = MethodSpec.methodBuilder("invoke")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
-                .returns(TypeName.VOID)
+                .returns(TypeName.OBJECT)
                 .addParameter(Consts.CLASS_NAME_STRING, "action")
+                .addParameter(Consts.CLASS_NAME_TYPE, "type")
                 .addParameter(ArrayTypeName.of(Consts.CLASS_NAME_OBJECT), "params");
+
+        invokeBuilder.addStatement("Object value = null");
+
         if (!intentActionsElements.isEmpty()) {
             invokeBuilder.beginControlFlow("switch (action)");
         }
@@ -530,6 +534,8 @@ public class MBridgeCompiler extends AbstractProcessor {
             invokeBuilder.endControlFlow();
             invokeBuilder.endControlFlow();
         }
+
+        invokeBuilder.addStatement("return value");
 
         ClassName classNameBase = ClassName.get(Consts.APT_CORE_PACKAGENAME, Consts.CLASS_SIMPLE_NAME_IMBRIDGE_SERVICE);
         String intentActionsTypeName = Consts.CLASS_PREFIX_MBRIDGE_SERVICE + moduleName;
@@ -574,39 +580,62 @@ public class MBridgeCompiler extends AbstractProcessor {
             }
 
             final String actionName = action.action();
+            final boolean rawParams = action.rawParams();
             invokeBuilder.beginControlFlow("case $S:", actionName);
             ExecutableElement executableElement = (ExecutableElement) member;
             List<? extends VariableElement> parameters = executableElement.getParameters();
-            addActionStatement(invokeBuilder, fieldName, actionName, parameters);
+            addActionStatement(invokeBuilder, fieldName, actionName, rawParams, TypeName.get(executableElement.getReturnType()), parameters);
             invokeBuilder.addStatement("break");
             invokeBuilder.endControlFlow();
         }
     }
 
-    private void addActionStatement(MethodSpec.Builder invokeBuilder, String fieldName, String actionName, List<? extends VariableElement> parameters) {
+    private void addActionStatement(MethodSpec.Builder invokeBuilder, String fieldName, String actionName, boolean rawParams, TypeName returnType, List<? extends VariableElement> parameters) {
         StringBuilder stringBuilder = new StringBuilder();
+        if (!TypeName.VOID.equals(returnType)) {
+            if (rawParams) {
+                stringBuilder.append("value = ");
+            } else {
+                stringBuilder.append("Object oValue = ");
+            }
+        }
         stringBuilder.append(fieldName).append(".").append(actionName).append("(");
         if (parameters != null && !parameters.isEmpty()) {
+            String[] paramAppendArray = new String[parameters.size()];
             for (int i = 0; i < parameters.size(); i++) {
+                VariableElement parameter = parameters.get(i);
+                String paramAppend;
+                if (!rawParams && typeUtils.isObjectType(parameter)) {
+                    TypeName paramType = ClassName.get(parameter.asType());
+                    StringBuilder subStringBuilder = new StringBuilder()
+                            .append("$T param")
+                            .append(i)
+                            .append(" = ")
+                            .append(Consts.CLASS_NAME_GSON_UTILS.toString())
+                            .append(".getValue(params[")
+                            .append(i)
+                            .append("], new com.google.gson.reflect.TypeToken<$T>() {}.getType()")
+                            .append(")");
+                    invokeBuilder.addStatement(subStringBuilder.toString(), paramType, paramType);
+                    paramAppend = "param" + i;
+                } else {
+                    paramAppend = "(" + ClassName.get(parameter.asType()).toString() + ") params[" + i + "]";
+                }
+                paramAppendArray[i] = paramAppend;
+            }
+            for (int i = 0; i < paramAppendArray.length; i++) {
                 if (i != 0) {
                     stringBuilder.append(", ");
                 }
-                VariableElement parameter = parameters.get(i);
-                if (typeUtils.isObjectType(parameter)) {
-                    stringBuilder.append(Consts.CLASS_NAME_GSON_UTILS.toString())
-                            .append(".getValue(params[")
-                            .append(i)
-                            .append("], new com.google.gson.reflect.TypeToken<")
-                            .append(ClassName.get(parameter.asType()).toString())
-                            .append(">() {}.getType(), ")
-                            .append(ClassName.get(parameter.asType()).toString())
-                            .append(".class)");
-                } else {
-                    stringBuilder.append("(").append(ClassName.get(parameter.asType()).toString()).append(") params[").append(i).append("]");
-                }
+                stringBuilder.append(paramAppendArray[i]);
             }
         }
         stringBuilder.append(")");
         invokeBuilder.addStatement(stringBuilder.toString());
+        if (!TypeName.VOID.equals(returnType) && !rawParams) {
+            invokeBuilder.beginControlFlow("if (type != null)");
+            invokeBuilder.addStatement("value = $T.getValue(oValue, type)", Consts.CLASS_NAME_GSON_UTILS);
+            invokeBuilder.endControlFlow();
+        }
     }
 }

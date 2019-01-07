@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +51,16 @@ public class MBridge {
         return null;
     }
 
-    public static void invoke(String moduleName, String action, Object... params) {
+    public static <T> T invoke(String moduleName, String action, Object... params) {
+        return invoke2(moduleName, action, null, params);
+    }
+
+    public static <T> T invoke2(String moduleName, String action, Type type, Object... params) {
         IMBridgeService intentActions = sBridgeServiceMap.get(moduleName);
         if (intentActions != null) {
-            intentActions.invoke(action, params);
+            return (T) intentActions.invoke(action, type, params);
         } else {
-            throw new RuntimeException("Module " + moduleName + " is not found.");
+            throw new RuntimeException("Module " + moduleName + " is not found in " + Utils.getAllModuleNames(sBridgeServiceMap));
         }
     }
 

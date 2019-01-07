@@ -32,6 +32,8 @@ public class Consts {
 
     public static final ClassName CLASS_NAME_URI = ClassName.get("android.net", "Uri");
 
+    public static final ClassName CLASS_NAME_TYPE = ClassName.get("java.lang.reflect", "Type");
+
     public static final ClassName CLASS_NAME_URI_UTILS = ClassName.get(APT_CORE_PACKAGENAME, "UriUtils");
 
     public static final ClassName CLASS_NAME_GSON_UTILS = ClassName.get(APT_CORE_PACKAGENAME, "GsonUtils");
